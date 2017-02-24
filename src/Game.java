@@ -2,154 +2,84 @@
  * Created by johnm on 2017-02-24.
  * <p>
  * BASEBALL 게임입니다.
- * 숫자입력은 x, x, x형식입니다. 각 숫자는 0~9사이를 넣어주세요.
  */
 
 
 public class Game {
-    private int strike;
-    private int ball;
-    private int out;
+    int[] anSource; //1~9까지 담을 배열
+    int[] answer;
+    int[] guess;
+    int[] arSbo; //Strike, ball, out 배열
 
-    private int[] gameNumber;
-    private int[] inputNum;
-
-    final int MAXBALL = 4;
-    final int MAXOUT = 300;
-
-    public Game() {
-        setStrike(0);
-        setBall(0);
-        setOut(0);
-        gameNumber = new int[3];
-        generateNumber(gameNumber);
-    }
-
-    private void generateNumber(int[] arNum) {
-        boolean flag = true;
-
-        while(flag){
-            for (int i = 0; i < arNum.length; i++) {
-                arNum[i] = (int) (Math.random() * 9) + 1;
-            }
-
-            if(arNum[0] != arNum[1] && arNum[0] != arNum[2] || arNum[1] != arNum[2]){
-                flag = false;
-            }
+    public Game(){
+        answer = new int[3];
+        guess = new int[3];
+        arSbo = new int[3];
+        anSource = new int[9];
+        for(int i=1; i<anSource.length; i++){
+            anSource[i] = i;
         }
 
-
-
-
-
+        makeAnswer();
     }
 
-    public String inPut(int[] inputNum) {
-        for (int i = 0; i < inputNum.length; i++) {
-            if (inputNum[i] < 1 && inputNum[i] > 9) {
-                return "1~9까지 중복되지 않는 숫자를 넣어주세요.";
-            }
+    //중복되지 않는 숫자를 만들기 위해 1~9배열을 섞어서 앞에서부터 옮겨담는다.
+    private void makeAnswer(){
+        int tmp;
+        for(int i=0; i<anSource.length; i++){
+            int j = (int)(Math.random()*8)+1;
+            tmp = anSource[i];
+            anSource[i] = anSource[j];
+            anSource[j] = tmp;
         }
 
-        for (int i = 0; i < inputNum.length; i++) {
-            if (i < inputNum.length - 1) {
-                if (inputNum[i] == inputNum[i + 1]) {
-                    return "1~9까지 중복되지 않는 숫자를 넣어주세요.";
-                }
-            }else{
-                if(inputNum[i] == inputNum[i-1]) {
-                    return "1~9까지 중복되지 않는 숫자를 넣어주세요.";
-                }else if(inputNum[i] == inputNum[i-2]){
-                    return "1~9까지 중복되지 않는 숫자를 넣어주세요.";
-                }
-            }
+        for(int i=0; i<answer.length; i++){
+            answer[i] = anSource[i];
+
         }
-
-
-        return compare(inputNum);
     }
 
-    private String compare(int[] arNum) {
+    //본게임에서 넘어온 숫자를 배열로 저장해 비교한다.
+    public int[] inGame(int num){
         boolean flag = false;
-        int count = 0;
-        setStrike(0);
-        setBall(0);
 
-        for(int i=0; i<arNum.length; i++){
-            if(arNum[i] == gameNumber[i]){
-                count++;
-            }
-
-            if(count == arNum.length){
-                return "전부 맞췄습니다. 승리!";
-            }
-
+        for(int i=0; i<arSbo.length-1; i++){
+            arSbo[i] = 0;
         }
 
-        for (int i = 0; i < this.gameNumber.length; i++) {
-            for (int j = 0; j < arNum.length; j++) {
-                if (gameNumber[i] == arNum[j]) {
-                    if (j == i) {
-                        setStrike(getStrike() + 1);
+        for(int i=guess.length-1; i>=0; i--){
+            guess[i] = num % 10;
+            num /= 10;
+        }
+
+        for(int i=0; i<guess.length; i++){
+            System.out.println(guess[i]);
+        }
+
+        //생각한 숫자와 정답 비교
+        for(int i=0; i<answer.length; i++){
+            for(int j=0; j<guess.length; j++){
+                if(answer[i] == guess[j]){
+                    if(i==j){
+                        arSbo[0]++;
                         flag = true;
-                    } else {
-                        setBall(getBall() + 1);
+                    }else{
+                        arSbo[1]++;
                         flag = true;
                     }
                 }
             }
         }
 
-        if (flag == false) {
-            setOut(getOut() + 1);
+        if(flag == false) arSbo[2]++;
+        return arSbo;
+    }
+
+    public String getAnswer(){
+        String str = "";
+        for(int i=0; i<answer.length; i++){
+            str += answer[i];
         }
-
-        if (getBall() == MAXBALL) {
-            setOut(getOut() + 1);
-        }
-        if (getOut() == MAXOUT) {
-            setStrike(0);
-            setBall(0);
-            setOut(0);
-            return "3아웃. 게임 오버입니다.";
-        }
-
-        return toString();
-
-    }
-
-    public int getStrike() {
-        return strike;
-    }
-
-    public void setStrike(int strike) {
-        this.strike = strike;
-    }
-
-    public int getBall() {
-        return ball;
-    }
-
-    public void setBall(int ball) {
-        this.ball = ball;
-    }
-
-    public int getOut() {
-        return out;
-    }
-
-    public void setOut(int out) {
-        this.out = out;
-    }
-
-    public String getGameNumber() {
-        return gameNumber[0] + "," + gameNumber[1] + "," + gameNumber[2];
-    }
-
-    @Override
-    public String toString() {
-        return strike + "스트라이크!, " +
-                ball + "볼!, " +
-                out + "아웃!";
+        return str;
     }
 }
